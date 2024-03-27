@@ -2,9 +2,9 @@
 UDP를 사용하여 파일을 전송하는 송신자 프로그램입니다.
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <arpa/inet.h>
 
 #define BUF_SIZE 1024
@@ -83,11 +83,11 @@ int main(int argc, char* argv[]) {
 UDP를 사용하여 파일을 전송받는 수신자 프로그램입니다.
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <arpa/inet.h>
-### 헤더파일입니
+### 헤더파일입니다.
 
 #define BUF_SIZE 1024
 ### 소켓 통신에 버퍼의 크기입니다.
@@ -95,6 +95,11 @@ UDP를 사용하여 파일을 전송받는 수신자 프로그램입니다.
 void error_handling(char* message);
 
 int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <port>\n", argv[0]);
+        exit(1);
+    }
+### 인수의 개수를 확인하고 배열의 저장합니다. 개수가 맞지 않으면 오류가 출력됩니다.
 
     int serv_sock;
     char buf[BUF_SIZE];
@@ -130,9 +135,9 @@ int main(int argc, char* argv[]) {
         recv_len = recvfrom(serv_sock, buf, BUF_SIZE, 0, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
         buf[recv_len] = '\0';
         printf("%s\n", buf);
+### recvfrom() 함수를 사용해 송신자로부터 데이터를 수신합니다. 함수는 소켓으로부터 데이터를 읽어 buf 배열에 저장합니다.
 
         sendto(serv_sock, "OK", strlen("OK"), 0, (struct sockaddr*)&clnt_addr, clnt_addr_size);
-### 송신자에게 "OK" 메시지를 전송하여 수신 확인을 응답합니다.
 
         fp = fopen(buf, "wb");
         if (fp == NULL) {
@@ -141,29 +146,36 @@ int main(int argc, char* argv[]) {
             continue;
         }
 ### 송신자에게 받은 파일의 이름을 통해 파일을 열고 이진 데이터로 파일을 씁니다. 실패하면 오류 처리합니다.
+
         while (1) {
             ssize_t recv_len = recvfrom(serv_sock, buf, BUF_SIZE, 0, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
             if (recv_len <= 0)
                 break;
             fwrite(buf, 1, recv_len, fp);
-### fwrite() 함수를 사용하여 수신된 데이터를 파일에 씁니다. fwrite()는 버퍼에서 데이터를 읽어 파일에 씁니다.
-
+### fwrite() 함수를 사용하여 수신된 데이터를 파일에 씁니다.
 
             if (strcmp(buf, "Finish") == 0) {
                 sendto(serv_sock, "WellDone", strlen("WellDone"), 0, (struct sockaddr*)&clnt_addr, clnt_addr_size);
-                printf("Sender: %s\n", buf);
+                printf("%s\n", buf);
                 fclose(fp);
                 break;
             }
-### 수신된 데이터가 "Finish"라는 문자열과 일치하면 "WellDone" 메시지를 송신자에게 보내고, 파일을 닫고 반복문을 종료합니다.
-
         }
+### 수신된 데이터가 "Finish"라는 문자열과 일치하면 "WellDone" 메시지를 송신자에게 보내고, 파일을 닫고 반복문을 종료합니다.
     }
 
     close(serv_sock);
 ### 소켓을 닫습니다.
+
     return 0;
 }
+
+void error_handling(char* message) {
+    perror(message);
+    exit(1);
+}
+### 시스템 오류 메시지를 출력합니다.
+
 
 
 
@@ -171,6 +183,6 @@ int main(int argc, char* argv[]) {
 
 ![스크린샷 2024-03-27 233409](https://github.com/torosa1/udp/assets/165176275/af8166ab-140c-43ce-b3a3-ddb90f88b571)
 
-![스크린샷 2024-03-27 233420](https://github.com/torosa1/udp/assets/165176275/34dbc04e-1ac9-4b66-b841-a1fbba8fbf25)
+![스크린샷 2024-03-28 001210](https://github.com/torosa1/udp/assets/165176275/74fb060c-a99b-457b-9e1b-a89a1fb63e60)
 
 ![스크린샷 2024-03-27 230325](https://github.com/torosa1/udp/assets/165176275/06fa137e-106b-4213-990d-c8c676d70832)
